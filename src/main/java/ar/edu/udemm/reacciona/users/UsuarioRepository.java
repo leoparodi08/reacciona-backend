@@ -9,4 +9,5 @@ public interface UsuarioRepository extends JpaRepository<Usuario, Long> {
     // Spring Data JPA nos dará los métodos básicos como save(), findById(), etc.
     // Spring Data JPA creará la implementación de este metodo automáticamente
     Optional<Usuario> findByEmail(String email);
+    Optional<Usuario> findByResetPasswordToken(String token);
 }

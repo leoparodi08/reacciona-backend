@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.http.ResponseEntity;
 
+
 @RestController
 @RequestMapping("/api/auth") // todas las rutas aca empiezan con /api/auth
 public class AuthController {
@@ -27,4 +28,22 @@ public class AuthController {
     public ResponseEntity<AuthResponse> login(@RequestBody LoginRequest request){
         return ResponseEntity.ok(authService.login(request));
     }
+    @PostMapping("/forgot-password")
+    public ResponseEntity<?> forgotPassword(@RequestBody ForgotPasswordRequest request) {
+        authService.processForgotPassword(request.email());
+        return ResponseEntity.ok("Si el email está registrado, recibirás un enlace para restablecer tu contraseña.");
+    }
+
+    @PostMapping("/reset-password")
+    public ResponseEntity<?> resetPassword(@RequestBody ResetPasswordRequest request) {
+        try {
+            authService.resetPassword(request.token(), request.newPassword());
+            return ResponseEntity.ok("Tu contraseña ha sido restablecida exitosamente.");
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
 }
+// DTOs para las peticiones
+record ForgotPasswordRequest(String email) {}
+record ResetPasswordRequest(String token, String newPassword) {}

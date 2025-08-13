@@ -5,6 +5,7 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import java.util.Collection;
 import java.util.List;
+import java.time.LocalDateTime;
 
 @Entity
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE) // Estrategia de Herencia: una sola tabla
@@ -21,6 +22,9 @@ public abstract class Usuario implements UserDetails {
     private String email;
 
     private String password;
+
+    private String resetPasswordToken;
+    private LocalDateTime resetPasswordTokenExpiryDate;
 
     // --- MÉTODOS REQUERIDOS POR UserDetails ---
     @Override
@@ -78,4 +82,8 @@ public abstract class Usuario implements UserDetails {
     public void setPassword(String password) {
         this.password = password;
     }
+    public String getResetPasswordToken() { return resetPasswordToken; }
+    public void setResetPasswordToken(String resetPasswordToken) { this.resetPasswordToken = resetPasswordToken; }
+    public LocalDateTime getResetPasswordTokenExpiryDate() { return resetPasswordTokenExpiryDate; }
+    public void setResetPasswordTokenExpiryDate(LocalDateTime resetPasswordTokenExpiryDate) { this.resetPasswordTokenExpiryDate = resetPasswordTokenExpiryDate; }
 }
