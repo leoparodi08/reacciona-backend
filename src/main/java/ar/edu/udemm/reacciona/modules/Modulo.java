@@ -1,9 +1,6 @@
 package ar.edu.udemm.reacciona.modules;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 
 @Entity // 1. Indica que esta clase es una tabla de la base de datos.
 public class Modulo {
@@ -14,7 +11,11 @@ public class Modulo {
 
     private String titulo;
     private String descripcion;
-    private String tipo;
+    @Enumerated(EnumType.STRING)
+    private TipoEmergencia tipoEmergencia;
+    @Enumerated(EnumType.STRING)
+    private NivelDificultad nivelDificultad;
+    private Integer tiempoEstimado;
 
     // JPA necesita un contructor sin argumentos.
     public Modulo() {
@@ -22,10 +23,12 @@ public class Modulo {
     }
 
     // Contructor para crear nuevos modulos sin un ID (la bd lo genera).
-    public Modulo(String titulo, String descripcion, String tipo){
+    public Modulo(String titulo, String descripcion, TipoEmergencia tipoEmergencia,NivelDificultad nivelDificultad, Integer tiempoEstimado){
         this.titulo = titulo;
         this.descripcion = descripcion;
-        this.tipo = tipo;
+        this.tipoEmergencia = tipoEmergencia;
+        this.nivelDificultad = nivelDificultad;
+        this.tiempoEstimado = tiempoEstimado;
     }
 
     // Getters y Setters para todos los campos...
@@ -47,10 +50,18 @@ public class Modulo {
     public void setDescripcion(String descripcion) {
         this.descripcion = descripcion;
     }
-    public String getTipo() {
-        return tipo;
+    public TipoEmergencia getTipoEmergencia() {
+        return tipoEmergencia;
     }
-    public void setTipo(String tipo) {
-        this.tipo = tipo;
+    public void setTipoEmergencia(TipoEmergencia tipoEmergencia) {
+        this.tipoEmergencia = tipoEmergencia;
+    }
+    public NivelDificultad getNivelDificultad() { return nivelDificultad; }
+    public void setNivelDificultad(NivelDificultad nivelDificultad) { this.nivelDificultad = nivelDificultad; }
+    public Integer getTiempoEstimado() {
+        return tiempoEstimado;
+    }
+    public void setTiempoEstimado(Integer tiempoEstimado) {
+        this.tiempoEstimado = tiempoEstimado;
     }
 }
