@@ -1,19 +1,21 @@
 package ar.edu.udemm.reacciona.auth;
 
-import ar.edu.udemm.reacciona.users.Estudiante;
-import ar.edu.udemm.reacciona.users.Usuario;
-import ar.edu.udemm.reacciona.users.UsuarioRepository;
+import java.time.LocalDateTime;
+import java.util.UUID;
+
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.stereotype.Service;
-import ar.edu.udemm.reacciona.config.jwt.JwtService;
+import org.springframework.mail.SimpleMailMessage;
+import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.mail.SimpleMailMessage;
-import org.springframework.mail.javamail.JavaMailSender;
-import java.time.LocalDateTime;
-import java.util.UUID;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
+
+import ar.edu.udemm.reacciona.config.jwt.JwtService;
+import ar.edu.udemm.reacciona.users.Estudiante;
+import ar.edu.udemm.reacciona.users.Usuario;
+import ar.edu.udemm.reacciona.users.UsuarioRepository;
 
 @Service
 public class AuthService {
@@ -34,6 +36,10 @@ public class AuthService {
 
     // metodo para registrar estudiante
     public Estudiante registrarEstudiante(Estudiante estudiante){
+        // Validar si el email ya existe
+        if (usuarioRepository.findByEmail(estudiante.getEmail()).isPresent()) {
+            throw new RuntimeException("El email ya está registrado.");
+        }
         // ciframos la contraseña antes de guardarla
         String hashedPassword = passwordEncoder.encode(estudiante.getPassword());
         estudiante.setPassword(hashedPassword);
