@@ -1,6 +1,6 @@
 package ar.edu.udemm.reacciona.auth;
 
-import ar.edu.udemm.reacciona.users.Estudiante;
+import ar.edu.udemm.reacciona.users.Usuario;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -21,8 +21,8 @@ public class AuthController {
     }
 
     @PostMapping("/register") // responde a la peticion POST a /api/auth/register
-    public Estudiante register(@RequestBody Estudiante estudiante){
-        return authService.registrarEstudiante(estudiante);
+    public ResponseEntity<Usuario> register(@RequestBody RegisterRequest request){
+        return ResponseEntity.ok(authService.registrarEstudiante(request));
     }
     @PostMapping("/login")
     public ResponseEntity<AuthResponse> login(@RequestBody LoginRequest request){

@@ -2,6 +2,8 @@ package ar.edu.udemm.reacciona;
 
 import ar.edu.udemm.reacciona.modules.Modulo;
 import ar.edu.udemm.reacciona.modules.ModuloRepository;
+import ar.edu.udemm.reacciona.users.Rol;
+import ar.edu.udemm.reacciona.users.RolRepository;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -38,6 +40,24 @@ public class ReaccionaApplication {
 				System.out.println(">>> La tabla de Módulos ya contiene datos. No se insertaron nuevos.");
 			}
 
+		};
+	}
+	@Bean
+	CommandLineRunner commandLineRunnerRoles(RolRepository rolRepository) {
+		return args -> {
+			// Verificamos si la tabla de roles está vacía
+			if (rolRepository.count() == 0) {
+				System.out.println(">>> Insertando Roles iniciales...");
+
+				Rol rolEstudiante = new Rol();
+				rolEstudiante.setNombreRol("Estudiante");
+
+				Rol rolDocente = new Rol();
+				rolDocente.setNombreRol("Docente");
+
+				rolRepository.save(rolEstudiante);
+				rolRepository.save(rolDocente);
+			}
 		};
 	}
 }
