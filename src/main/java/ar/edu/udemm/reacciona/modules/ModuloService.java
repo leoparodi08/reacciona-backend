@@ -18,6 +18,8 @@ public class ModuloService {
     }
     // Lógica de negocio para obtener todos los módulos
     public List<Modulo> obtenerTodosLosModulos() {
-        return moduloRepository.findAll();
-    }
+        List<Modulo> modulos = moduloRepository.findAll();
+        // Inicializar la colección de contenidos para evitar problemas de LazyInitializationException
+        modulos.forEach(modulo -> modulo.getContenidos().size());
+        return modulos;    }
 }

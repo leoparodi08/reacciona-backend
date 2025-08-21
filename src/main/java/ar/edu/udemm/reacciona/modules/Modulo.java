@@ -1,6 +1,12 @@
 package ar.edu.udemm.reacciona.modules;
 
+import ar.edu.udemm.reacciona.entity.Contenido;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 
 @Entity // 1. Indica que esta clase es una tabla de la base de datos.
 public class Modulo {
@@ -16,6 +22,10 @@ public class Modulo {
     @Enumerated(EnumType.STRING)
     private NivelDificultad nivelDificultad;
     private Integer tiempoEstimado;
+
+    @OneToMany(mappedBy = "modulo", cascade = CascadeType.ALL, orphanRemoval = true,  fetch = FetchType.LAZY)
+    //@JsonManagedReference
+    private List<Contenido> contenidos = new ArrayList<>();
 
     // JPA necesita un contructor sin argumentos.
     public Modulo() {
@@ -63,5 +73,11 @@ public class Modulo {
     }
     public void setTiempoEstimado(Integer tiempoEstimado) {
         this.tiempoEstimado = tiempoEstimado;
+    }
+    public List<Contenido> getContenidos() {
+        return contenidos;
+    }
+    public void setContenidos(List<Contenido> contenidos) {
+        this.contenidos = contenidos;
     }
 }
