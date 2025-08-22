@@ -18,9 +18,14 @@ public class ContenidoController {
         this.contenidoService = contenidoService;
     }
 
-    @GetMapping("/modulo/{idModulo}")
-    public List<Contenido> obtenerContenidosPorModulo(@PathVariable Long idModulo) {
-        return contenidoService.obtenerContenidosPorModulo(idModulo);
+    @GetMapping
+    public List<Contenido> obtenerContenidos() {
+        return contenidoService.obtenerContenidos();
+    }
+
+    @GetMapping("/{id}")
+    public Contenido obtenerContenido(@PathVariable Long id) {
+        return contenidoService.obtenerContenido(id);
     }
 
     @PostMapping

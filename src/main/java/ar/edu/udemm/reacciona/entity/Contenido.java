@@ -24,7 +24,6 @@ public class Contenido {
 
     private String urlRecurso;
 
-    @Lob
     private String cuerpo;
 
     private Integer orden;

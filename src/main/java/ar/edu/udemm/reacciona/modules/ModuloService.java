@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service // Marca esta clase como un Servicio de Spring
 public class ModuloService {
@@ -21,5 +22,12 @@ public class ModuloService {
         List<Modulo> modulos = moduloRepository.findAll();
         // Inicializar la colección de contenidos para evitar problemas de LazyInitializationException
         modulos.forEach(modulo -> modulo.getContenidos().size());
-        return modulos;    }
+        return modulos;
+    }
+
+    public Optional<Modulo> obtenerModuloPorId(Long idModulo) {
+        Optional<Modulo> modulo = moduloRepository.findById(idModulo);
+        modulo.ifPresent(m -> m.getContenidos().size()); // Inicializa la colección
+        return modulo;
+    }
 }

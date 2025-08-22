@@ -2,6 +2,7 @@ package ar.edu.udemm.reacciona.service;
 
 import ar.edu.udemm.reacciona.entity.Contenido;
 import ar.edu.udemm.reacciona.repository.ContenidoRepository;
+import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -17,8 +18,13 @@ public class ContenidoService {
         this.contenidoRepository = contenidoRepository;
     }
 
-    public List<Contenido> obtenerContenidosPorModulo(Long idModulo) {
+    public List<Contenido> obtenerContenidos() {
         return contenidoRepository.findAll(); // Filtrar por idModulo si es necesario
+    }
+
+    public Contenido obtenerContenido(Long id) {
+        return contenidoRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Contenido no encontrado con id: " + id));
     }
 
     public Contenido guardarContenido(Contenido contenido) {
