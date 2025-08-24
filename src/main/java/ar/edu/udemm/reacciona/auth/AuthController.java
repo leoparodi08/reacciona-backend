@@ -1,5 +1,6 @@
 package ar.edu.udemm.reacciona.auth;
 
+import ar.edu.udemm.reacciona.users.Usuario;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -30,6 +31,9 @@ public class AuthController {
                 java.util.Map.of("message", e.getMessage())
             );
         }
+=======
+    public ResponseEntity<Usuario> register(@RequestBody RegisterRequest request){
+        return ResponseEntity.ok(authService.registrarEstudiante(request));
     }
     @PostMapping("/login")
     public ResponseEntity<AuthResponse> login(@RequestBody LoginRequest request){

@@ -3,6 +3,10 @@ package ar.edu.udemm.reacciona.auth;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
+import ar.edu.udemm.reacciona.users.Usuario;
+import ar.edu.udemm.reacciona.users.UsuarioRepository;
+import ar.edu.udemm.reacciona.users.Rol;
+import ar.edu.udemm.reacciona.users.RolRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
@@ -24,14 +28,16 @@ public class AuthService {
     private final JwtService jwtService; // Servicio para crear el token
     private final AuthenticationManager authenticationManager; // Gestor de autenticación
     private final JavaMailSender mailSender;
+    private final RolRepository rolRepository;
 
     @Autowired
-    public AuthService(UsuarioRepository usuarioRepository, PasswordEncoder passwordEncoder, JwtService jwtService, AuthenticationManager authenticationManager, JavaMailSender mailSender){
+    public AuthService(UsuarioRepository usuarioRepository, PasswordEncoder passwordEncoder, JwtService jwtService, AuthenticationManager authenticationManager, JavaMailSender mailSender, RolRepository rolRepository){
         this.usuarioRepository = usuarioRepository;
         this.passwordEncoder = passwordEncoder;
         this.jwtService = jwtService;
         this.authenticationManager = authenticationManager;
         this.mailSender= mailSender;
+        this.rolRepository= rolRepository;
     }
 
     // metodo para registrar estudiante
@@ -40,15 +46,22 @@ public class AuthService {
         if (usuarioRepository.findByEmail(estudiante.getEmail()).isPresent()) {
             throw new RuntimeException("El email ya está registrado.");
         }
+    public Usuario registrarEstudiante(RegisterRequest request){
+        Usuario nuevoUsuario = new Usuario();
+        nuevoUsuario.setNombre(request.nombre());
+        nuevoUsuario.setEmail(request.email());
         // ciframos la contraseña antes de guardarla
-        String hashedPassword = passwordEncoder.encode(estudiante.getPassword());
-        estudiante.setPassword(hashedPassword);
-        // guardamos el estudiante en la base de datos
-        Estudiante nuevoEstudiante = usuarioRepository.save(estudiante);
-        // despues de guardar, enviamos correo de biemvenida.
-        sendWelcomeEmail(nuevoEstudiante.getEmail(), nuevoEstudiante.getNombre());
+        String hashedPassword = passwordEncoder.encode(request.password());
+        nuevoUsuario.setPassword(hashedPassword);
+        // Se asigna el rol de "Estudiante" por defecto
+        Rol rolEstudiante = rolRepository.findByNombreRol("Estudiante")
+                .orElseThrow(() -> new RuntimeException("Error: Rol no encontrado."));
+        nuevoUsuario.setRol(rolEstudiante);
 
-        return nuevoEstudiante;
+        Usuario usuarioGuardado = usuarioRepository.save(nuevoUsuario);
+
+        sendWelcomeEmail(usuarioGuardado.getEmail(), usuarioGuardado.getNombre());
+        return usuarioGuardado;
     }
     public AuthResponse login(LoginRequest request){
         // 1. Le pedimos a Spring Security que autentique al usuario.
