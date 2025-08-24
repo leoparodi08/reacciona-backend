@@ -2,12 +2,13 @@ package ar.edu.udemm.reacciona.auth;
 
 import ar.edu.udemm.reacciona.users.Usuario;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.http.ResponseEntity;
 
+import ar.edu.udemm.reacciona.users.Estudiante;
 
 @RestController
 @RequestMapping("/api/auth") // todas las rutas aca empiezan con /api/auth
@@ -21,6 +22,16 @@ public class AuthController {
     }
 
     @PostMapping("/register") // responde a la peticion POST a /api/auth/register
+    public ResponseEntity<?> register(@RequestBody Estudiante estudiante){
+        try {
+            Estudiante nuevo = authService.registrarEstudiante(estudiante);
+            return ResponseEntity.ok(nuevo);
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(
+                java.util.Map.of("message", e.getMessage())
+            );
+        }
+=======
     public ResponseEntity<Usuario> register(@RequestBody RegisterRequest request){
         return ResponseEntity.ok(authService.registrarEstudiante(request));
     }
