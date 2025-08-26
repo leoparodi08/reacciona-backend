@@ -17,9 +17,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import ar.edu.udemm.reacciona.config.jwt.JwtService;
-import ar.edu.udemm.reacciona.users.Estudiante;
-import ar.edu.udemm.reacciona.users.Usuario;
-import ar.edu.udemm.reacciona.users.UsuarioRepository;
+
 
 @Service
 public class AuthService {
@@ -40,12 +38,6 @@ public class AuthService {
         this.rolRepository= rolRepository;
     }
 
-    // metodo para registrar estudiante
-    public Estudiante registrarEstudiante(Estudiante estudiante){
-        // Validar si el email ya existe
-        if (usuarioRepository.findByEmail(estudiante.getEmail()).isPresent()) {
-            throw new RuntimeException("El email ya está registrado.");
-        }
     public Usuario registrarEstudiante(RegisterRequest request){
         Usuario nuevoUsuario = new Usuario();
         nuevoUsuario.setNombre(request.nombre());
