@@ -3,10 +3,6 @@ package ar.edu.udemm.reacciona.auth;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
-import ar.edu.udemm.reacciona.users.Usuario;
-import ar.edu.udemm.reacciona.users.UsuarioRepository;
-import ar.edu.udemm.reacciona.users.Rol;
-import ar.edu.udemm.reacciona.users.RolRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
@@ -17,7 +13,10 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import ar.edu.udemm.reacciona.config.jwt.JwtService;
-
+import ar.edu.udemm.reacciona.users.Rol;
+import ar.edu.udemm.reacciona.users.RolRepository;
+import ar.edu.udemm.reacciona.users.Usuario;
+import ar.edu.udemm.reacciona.users.UsuarioRepository;
 
 @Service
 public class AuthService {
@@ -49,6 +48,10 @@ public class AuthService {
         Rol rolEstudiante = rolRepository.findByNombreRol("Estudiante")
                 .orElseThrow(() -> new RuntimeException("Error: Rol no encontrado."));
         nuevoUsuario.setRol(rolEstudiante);
+
+        if (usuarioRepository.findByEmail(request.email()).isPresent()) {
+            throw new ar.edu.udemm.reacciona.exception.EmailAlreadyExistsException("El email ya está registrado");
+        }
 
         Usuario usuarioGuardado = usuarioRepository.save(nuevoUsuario);
 
