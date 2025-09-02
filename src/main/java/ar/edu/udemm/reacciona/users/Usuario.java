@@ -1,37 +1,62 @@
 package ar.edu.udemm.reacciona.users;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
+import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.List;
-import java.time.LocalDateTime;
 
 @Entity
-@Inheritance(strategy = InheritanceType.SINGLE_TABLE) // Estrategia de Herencia: una sola tabla
-@DiscriminatorColumn(name = "user_type") // Columna que diferencia el tipo de usuario
-
-public abstract class Usuario implements UserDetails {
+@Table(name = "usuarios")
+public class Usuario implements UserDetails {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @Column(name = "id_usuario")
+    private Long idUsuario;
 
+    @Column(nullable = false, length = 100)
     private String nombre;
 
-    @Column(unique = true) // el email debe ser unico para cada usuario
+    @Column(nullable = false, unique = true, length = 100)
     private String email;
 
+    @Column(name = "password_hash", nullable = false)
+    @JsonIgnore
     private String password;
+
+    @CreationTimestamp
+    @Column(name = "fecha_creacion", updatable = false)
+    private LocalDateTime fechaCreacion;
+
+    @UpdateTimestamp
+    @Column(name = "fecha_actualizacion")
+    private LocalDateTime fechaActualizacion;
+
+    // Relación con Roles
+    @ManyToOne
+    @JoinColumn(name = "id_rol")
+    private Rol rol;
+
+    private int puntos = 0; // Por defecto, un nuevo usuario tiene 0 puntos.
 
     private String resetPasswordToken;
     private LocalDateTime resetPasswordTokenExpiryDate;
 
+    public Usuario() {
+    }
     // --- MÉTODOS REQUERIDOS POR UserDetails ---
     @Override
+    @JsonIgnore
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        // Aquí se definirían los roles/permisos (ej. "ROLE_ESTUDIANTE", "ROLE_DOCENTE").
-        // Por ahora, devolvemos una lista vacía.
-        return List.of();
+        if (rol == null) {
+            return List.of();
+        }
+        return List.of(new SimpleGrantedAuthority(rol.getNombreRol()));
     }
     @Override
     public String getUsername() {
@@ -60,12 +85,13 @@ public abstract class Usuario implements UserDetails {
     public boolean isEnabled() {
         return true;
     }
+
     // Getters y Setters
     public Long getId() {
-        return id;
+        return idUsuario;
     }
     public void setId(Long id) {
-        this.id = id;
+        this.idUsuario = id;
     }
     public String getNombre() {
         return nombre;
@@ -86,4 +112,7 @@ public abstract class Usuario implements UserDetails {
     public void setResetPasswordToken(String resetPasswordToken) { this.resetPasswordToken = resetPasswordToken; }
     public LocalDateTime getResetPasswordTokenExpiryDate() { return resetPasswordTokenExpiryDate; }
     public void setResetPasswordTokenExpiryDate(LocalDateTime resetPasswordTokenExpiryDate) { this.resetPasswordTokenExpiryDate = resetPasswordTokenExpiryDate; }
+    public void setRol(Rol rol) {this.rol = rol;}
+    public int getPuntos() { return puntos; }
+    public void setPuntos(int puntos) { this.puntos = puntos; }
 }
