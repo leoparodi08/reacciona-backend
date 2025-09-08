@@ -3,7 +3,11 @@ package ar.edu.udemm.reacciona.entity;
 import ar.edu.udemm.reacciona.modules.Modulo;
 import ar.edu.udemm.reacciona.utils.TipoContenido;
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 public class Contenido {
@@ -28,17 +32,22 @@ public class Contenido {
 
     private Integer orden;
 
+    @OneToMany(mappedBy = "contenido", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonManagedReference
+    private List<PasoSimulacion> pasosSimulacion = new ArrayList<>();
+
     // Constructor vacío requerido por JPA
     public Contenido() {}
 
     // Constructor con parámetros
-    public Contenido(Modulo modulo, String titulo, TipoContenido tipoContenido, String urlRecurso, String cuerpo, Integer orden) {
+    public Contenido(Modulo modulo, String titulo, TipoContenido tipoContenido, String urlRecurso, String cuerpo, Integer orden, List<PasoSimulacion> pasosSimulacion) {
         this.modulo = modulo;
         this.titulo = titulo;
         this.tipoContenido = tipoContenido;
         this.urlRecurso = urlRecurso;
         this.cuerpo = cuerpo;
         this.orden = orden;
+        this.pasosSimulacion = pasosSimulacion;
     }
 
     // Getters y Setters
@@ -96,5 +105,13 @@ public class Contenido {
 
     public void setOrden(Integer orden) {
         this.orden = orden;
+    }
+
+    public List<PasoSimulacion> getPasosSimulacion() {
+        return pasosSimulacion;
+    }
+
+    public void setPasosSimulacion(List<PasoSimulacion> pasosSimulacion) {
+        this.pasosSimulacion = pasosSimulacion;
     }
 }

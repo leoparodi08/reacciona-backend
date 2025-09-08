@@ -21,6 +21,17 @@ public class OpcionPaso {
 
     private String feedback;
 
+    public OpcionPaso() {
+    }
+
+    public OpcionPaso(Long idOpcion, PasoSimulacion pasoSimulacion, String textoOpcion, Boolean esCorrecto, String feedback) {
+        this.idOpcion = idOpcion;
+        this.pasoSimulacion = pasoSimulacion;
+        this.textoOpcion = textoOpcion;
+        this.esCorrecto = esCorrecto;
+        this.feedback = feedback;
+    }
+
     public Long getIdOpcion() {
         return idOpcion;
     }

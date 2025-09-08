@@ -29,6 +29,18 @@ public class PasoSimulacion {
     @JsonManagedReference
     private List<OpcionPaso> opcionesPaso = new ArrayList<>();
 
+    public PasoSimulacion() {
+    }
+
+    public PasoSimulacion(Long idPaso, Contenido contenido, String descripcion, Integer orden, String escenario, List<OpcionPaso> opcionesPaso) {
+        this.idPaso = idPaso;
+        this.contenido = contenido;
+        this.descripcion = descripcion;
+        this.orden = orden;
+        this.escenario = escenario;
+        this.opcionesPaso = opcionesPaso;
+    }
+
     public Long getIdPaso() {
         return idPaso;
     }
