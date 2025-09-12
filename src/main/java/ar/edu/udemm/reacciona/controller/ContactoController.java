@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/api/contacto")
-@CrossOrigin
+@CrossOrigin(origins = "http://localhost:3000")
 public class ContactoController {
 
     @Autowired
@@ -21,7 +21,7 @@ public class ContactoController {
     public String enviarConsulta(@RequestBody ContactoRequest request) {
         // 1. Enviar mail a soporte
         SimpleMailMessage soporteMsg = new SimpleMailMessage();
-        soporteMsg.setTo("soporte@reacciona.com");
+        soporteMsg.setTo("reacciona.backend@gmail.com");
         soporteMsg.setSubject("Nueva consulta de contacto");
         soporteMsg.setText("Nombre: " + request.getName() + "\nEmail: " + request.getEmail() + "\nMensaje:\n" + request.getMessage());
         mailSender.send(soporteMsg);
