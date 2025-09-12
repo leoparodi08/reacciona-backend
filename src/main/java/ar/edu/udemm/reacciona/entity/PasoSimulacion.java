@@ -6,9 +6,9 @@ import jakarta.persistence.*;
 
 import java.util.ArrayList;
 import java.util.List;
+
 @Entity
 public class PasoSimulacion {
-
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -23,7 +23,11 @@ public class PasoSimulacion {
 
     private Integer orden;
 
+ //   @Lob
+ //   @Column(columnDefinition = "TEXT")
     private String escenario;
+
+    private String video;
 
     @OneToMany(mappedBy = "pasoSimulacion", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonManagedReference
@@ -32,12 +36,13 @@ public class PasoSimulacion {
     public PasoSimulacion() {
     }
 
-    public PasoSimulacion(Long idPaso, Contenido contenido, String descripcion, Integer orden, String escenario, List<OpcionPaso> opcionesPaso) {
+    public PasoSimulacion(Long idPaso, Contenido contenido, String descripcion, Integer orden, String escenario, String video, List<OpcionPaso> opcionesPaso) {
         this.idPaso = idPaso;
         this.contenido = contenido;
         this.descripcion = descripcion;
         this.orden = orden;
         this.escenario = escenario;
+        this.video = video;
         this.opcionesPaso = opcionesPaso;
     }
 
@@ -81,6 +86,14 @@ public class PasoSimulacion {
         this.escenario = escenario;
     }
 
+    public String getVideo() {
+        return video;
+    }
+
+    public void setVideo(String video) {
+        this.video = video;
+    }
+
     public List<OpcionPaso> getOpcionesPaso() {
         return opcionesPaso;
     }
@@ -88,5 +101,4 @@ public class PasoSimulacion {
     public void setOpcionesPaso(List<OpcionPaso> opcionesPaso) {
         this.opcionesPaso = opcionesPaso;
     }
-
 }
