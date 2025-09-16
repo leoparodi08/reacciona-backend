@@ -21,15 +21,18 @@ public class OpcionPaso {
 
     private String feedback;
 
+    private String video;
+
     public OpcionPaso() {
     }
 
-    public OpcionPaso(Long idOpcion, PasoSimulacion pasoSimulacion, String textoOpcion, Boolean esCorrecto, String feedback) {
+    public OpcionPaso(Long idOpcion, PasoSimulacion pasoSimulacion, String textoOpcion, Boolean esCorrecto, String feedback, String video) {
         this.idOpcion = idOpcion;
         this.pasoSimulacion = pasoSimulacion;
         this.textoOpcion = textoOpcion;
         this.esCorrecto = esCorrecto;
         this.feedback = feedback;
+        this.video = video;
     }
 
     public Long getIdOpcion() {
@@ -72,4 +75,11 @@ public class OpcionPaso {
         this.feedback = feedback;
     }
 
+    public String getVideo() {
+        return video;
+    }
+
+    public void setVideo(String video) {
+        this.video = video;
+    }
 }
