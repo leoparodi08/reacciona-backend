@@ -4,5 +4,6 @@ public enum TipoContenido {
     VIDEO,
     TEXTO,
     INFOGRAFIA,
-    SIMULACION
+    SIMULACION,
+    PEDAGOGICO
 }
