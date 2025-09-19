@@ -23,8 +23,7 @@ public class PasoSimulacion {
 
     private Integer orden;
 
- //   @Lob
- //   @Column(columnDefinition = "TEXT")
+    @Column(columnDefinition = "TEXT")
     private String escenario;
 
     private String video;

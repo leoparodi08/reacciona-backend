@@ -28,6 +28,7 @@ public class Contenido {
 
     private String urlRecurso;
 
+    @Column(columnDefinition = "TEXT")
     private String cuerpo;
 
     private Integer orden;

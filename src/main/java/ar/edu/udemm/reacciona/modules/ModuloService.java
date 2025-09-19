@@ -1,5 +1,6 @@
 package ar.edu.udemm.reacciona.modules;
 
+import ar.edu.udemm.reacciona.entity.Contenido;
 import ar.edu.udemm.reacciona.entity.PasoSimulacion;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -31,9 +32,11 @@ public class ModuloService {
         Optional<Modulo> modulo = moduloRepository.findById(idModulo);
 
         modulo.ifPresent(m -> {
-            // Inicializa la colección de contenidos
+            // Ordena los contenidos por el campo 'orden'
+            m.getContenidos().sort(Comparator.comparing(Contenido::getOrden));
+
+            // Inicializa y ordena los pasosSimulacion de cada contenido
             m.getContenidos().forEach(contenido -> {
-                // Ordena los pasosSimulacion por el campo 'orden'
                 contenido.getPasosSimulacion().sort(Comparator.comparing(PasoSimulacion::getOrden));
             });
         });
