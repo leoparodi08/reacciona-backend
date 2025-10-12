@@ -12,6 +12,12 @@ import ar.edu.udemm.reacciona.users.UsuarioService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import ar.edu.udemm.reacciona.repository.ContenidoRepository;
+import ar.edu.udemm.reacciona.repository.ContenidoRevisadoRepository;
+import ar.edu.udemm.reacciona.entity.Contenido;
+import ar.edu.udemm.reacciona.entity.ContenidoRevisado;
+import ar.edu.udemm.reacciona.entity.ContenidoRevisadoId;
+
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -27,19 +33,25 @@ public class ProgressService {
     private final AchievementRepository achievementRepository;
     private final UsuarioService usuarioService;
     private final PasoSimulacionRepository pasoSimulacionRepository;
+    private final ContenidoRepository contenidoRepository;
+    private final ContenidoRevisadoRepository contenidoRevisadoRepository;
 
     public ProgressService(ModuloRepository moduloRepository,
                            ModuleProgressRepository moduleProgressRepository,
                            ActivityAttemptRepository activityAttemptRepository,
                            AchievementRepository achievementRepository,
                            UsuarioService usuarioService,
-                           PasoSimulacionRepository pasoSimulacionRepository) {
+                           PasoSimulacionRepository pasoSimulacionRepository,
+                           ContenidoRepository contenidoRepository,
+                           ContenidoRevisadoRepository contenidoRevisadoRepository) {
         this.moduloRepository = moduloRepository;
         this.moduleProgressRepository = moduleProgressRepository;
         this.activityAttemptRepository = activityAttemptRepository;
         this.achievementRepository = achievementRepository;
         this.usuarioService = usuarioService;
         this.pasoSimulacionRepository = pasoSimulacionRepository;
+        this.contenidoRepository = contenidoRepository;
+        this.contenidoRevisadoRepository = contenidoRevisadoRepository;
     }
 
     /**
@@ -208,5 +220,26 @@ public class ProgressService {
     private void grantIfNotExists(Usuario usuario, String codigo, String nombre, String descripcion, String icono) {
         achievementRepository.findByUsuarioAndCodigo(usuario, codigo)
                 .orElseGet(() -> achievementRepository.save(new Achievement(usuario, codigo, nombre, descripcion, icono)));
+    }
+    // METODO para marcar contenido como visto
+    @Transactional
+    public void markContentAsViewed(Long contenidoId) {
+        Usuario usuario = usuarioService.getAuthenticatedUser();
+        Contenido contenido = contenidoRepository.findById(contenidoId)
+                .orElseThrow(() -> new IllegalArgumentException("Contenido no encontrado"));
+
+        ContenidoRevisadoId id = new ContenidoRevisadoId(usuario.getId(), contenido.getId());
+
+        // Guardamos solo si no existe para evitar errores
+        if (!contenidoRevisadoRepository.existsById(id)) {
+            ContenidoRevisado revisado = new ContenidoRevisado(usuario, contenido);
+            contenidoRevisadoRepository.save(revisado);
+        }
+    }
+    // METODO para obtener los IDs de contenido ya vistos
+    @Transactional(readOnly = true)
+    public Set<Long> getViewedContentIds(Long moduloId) {
+        Usuario usuario = usuarioService.getAuthenticatedUser();
+        return contenidoRevisadoRepository.findViewedContentIdsByUsuarioAndModulo(usuario, moduloId);
     }
 }

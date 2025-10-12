@@ -12,6 +12,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
+import java.util.Set;
 
 @RestController
 @RequestMapping("/api/progress")
@@ -68,6 +69,19 @@ public class ProgressController {
         // Simple debug endpoint: retorna conteo de intentos por usuario (no expone todos los datos para mantenerlo corto)
         log.info("[GET /api/progress/attempts] user={}", principal != null ? principal.getName() : "?");
         return ResponseEntity.ok("Endpoint de depuracion: revisar tabla actividad_intento directamente para detalle.");
+    }
+
+    // ENDPOINT para marcar un contenido como visto
+    @PostMapping("/content/{contenidoId}/mark-as-viewed")
+    public ResponseEntity<?> markContentAsViewed(@PathVariable Long contenidoId) {
+        progressService.markContentAsViewed(contenidoId);
+        return ResponseEntity.ok().build();
+    }
+
+    // ENDPOINT para obtener los IDs de contenido vistos de un módulo
+    @GetMapping("/module/{moduloId}/viewed-content")
+    public ResponseEntity<Set<Long>> getViewedContentIds(@PathVariable Long moduloId) {
+        return ResponseEntity.ok(progressService.getViewedContentIds(moduloId));
     }
 }
 
