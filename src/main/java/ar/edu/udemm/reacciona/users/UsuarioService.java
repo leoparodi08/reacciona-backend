@@ -7,16 +7,23 @@ import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.Comparator;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class UsuarioService {
     private final UsuarioRepository usuarioRepository;
+    private final RolRepository rolRepository;
     private final PasswordEncoder passwordEncoder;
     private final JavaMailSender mailSender;
 
     @Autowired
-    public UsuarioService(UsuarioRepository usuarioRepository, PasswordEncoder passwordEncoder, JavaMailSender mailSender){
+    public UsuarioService(UsuarioRepository usuarioRepository, RolRepository rolRepository, PasswordEncoder passwordEncoder, JavaMailSender mailSender){
         this.usuarioRepository = usuarioRepository;
+        this.rolRepository = rolRepository;
         this.passwordEncoder = passwordEncoder;
         this.mailSender= mailSender;
     }
@@ -64,8 +71,42 @@ public class UsuarioService {
 
     public UserProfileDto getAuthenticatedUserProfile() {
         Usuario usuario = getAuthenticatedUser();
-        return new UserProfileDto(usuario.getNombre(), usuario.getEmail(), usuario.getPuntos());
+        return new UserProfileDto(usuario.getId(), usuario.getNombre(), usuario.getEmail(), usuario.getPuntos(), usuario.getRol().getIdRol());
     }
+
+    public List<UserProfileDto> getAllUserProfiles(Long id) {
+        return usuarioRepository.findAll().stream()
+                .filter(usuario -> !usuario.getId().equals(id)) // Excluir el usuario con el ID recibido
+                .sorted(Comparator.comparing(Usuario::getNombre)) // Ordenar por nombre ascendente
+                .map(usuario -> new UserProfileDto(
+                        usuario.getId(),
+                        usuario.getNombre(),
+                        usuario.getEmail(),
+                        usuario.getPuntos(),
+                        usuario.getRol().getIdRol()
+                ))
+                .collect(Collectors.toList());
+    }
+
+
+    @Transactional
+    public Usuario updateUserRole(Long idUsuario, Integer idRol) {
+        // Verificar si el usuario existe
+        Usuario usuario = usuarioRepository.findById(idUsuario)
+                .orElseThrow(() -> new IllegalArgumentException("Usuario no encontrado con id: " + idUsuario));
+
+        // Verificar si el rol existe
+        Rol rol = rolRepository.findById(idRol)
+                .orElseThrow(() -> new IllegalArgumentException("Rol no encontrado con id: " + idRol));
+
+        // Actualizar el rol del usuario
+        usuario.setRol(rol);
+        return usuarioRepository.save(usuario);
+    }
+
 }
+
+
+
 
 record UpdateProfileRequest(String nombre, String email) {}

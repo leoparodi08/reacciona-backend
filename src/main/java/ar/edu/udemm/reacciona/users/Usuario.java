@@ -37,6 +37,10 @@ public class Usuario implements UserDetails {
     @Column(name = "fecha_actualizacion")
     private LocalDateTime fechaActualizacion;
 
+    public Rol getRol() {
+        return rol;
+    }
+
     // Relación con Roles
     @ManyToOne
     @JoinColumn(name = "id_rol")

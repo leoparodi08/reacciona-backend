@@ -4,6 +4,8 @@ package ar.edu.udemm.reacciona.users;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 // ...
 
 @RestController
@@ -21,6 +23,12 @@ public class UsuarioController {
         return ResponseEntity.ok(usuarioService.getAuthenticatedUserProfile());
     }
 
+    @GetMapping("/all/{idUsuario}") // Endpoint para obtener todos los perfiles de usuario
+    public ResponseEntity<List<UserProfileDto>> getAllProfile(@PathVariable Long idUsuario) {
+        return ResponseEntity.ok(usuarioService.getAllUserProfiles(idUsuario));
+    }
+
+
     @PutMapping("/me") // Endpoint para actualizar el perfil
     public ResponseEntity<Usuario> updateMyProfile(@RequestBody UpdateProfileRequest request) {
         return ResponseEntity.ok(usuarioService.updateUserProfile(request));
@@ -34,4 +42,11 @@ public class UsuarioController {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
+
+    @PutMapping("/update-role")
+    public ResponseEntity<Usuario> updateUserRole(@RequestBody UpdateUserRolRequest request) {
+        Usuario updatedUser = usuarioService.updateUserRole(request.getIdUsuario(), request.getIdRol());
+        return ResponseEntity.ok(updatedUser);
+    }
+
 }
