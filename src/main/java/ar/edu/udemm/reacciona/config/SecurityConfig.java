@@ -25,11 +25,14 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 import ar.edu.udemm.reacciona.config.jwt.JwtAuthenticationFilter;
 import ar.edu.udemm.reacciona.users.UsuarioRepository;
+import org.springframework.beans.factory.annotation.Value;
 
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
     private static final Logger log = LoggerFactory.getLogger(SecurityConfig.class);
+    @Value("${app.cors.allowed-origins}")
+    private String[] allowedOrigins;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http, JwtAuthenticationFilter jwtAuthFilter) throws Exception {
@@ -109,7 +112,7 @@ public class SecurityConfig {
             @Override
             public void addCorsMappings(@NonNull CorsRegistry registry) {
                 registry.addMapping("/api/**")
-                        .allowedOrigins("http://localhost:3000")
+                        .allowedOrigins(allowedOrigins)
                         .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
                         .allowedHeaders("*");
             }
