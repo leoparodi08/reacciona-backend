@@ -57,8 +57,12 @@ public class ReaccionaApplication {
 				Rol rolDocente = new Rol();
 				rolDocente.setNombreRol("Docente");
 
+				Rol rolAdministrador = new Rol();
+				rolAdministrador.setNombreRol("Administrador");
+
 				rolRepository.save(rolEstudiante);
 				rolRepository.save(rolDocente);
+				rolRepository.save(rolAdministrador);
 			}
 		};
 	}
