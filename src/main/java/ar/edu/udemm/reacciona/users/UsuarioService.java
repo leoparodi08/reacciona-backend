@@ -1,6 +1,8 @@
 package ar.edu.udemm.reacciona.users;
 
+import ar.edu.udemm.reacciona.entity.Clase;
 import ar.edu.udemm.reacciona.modules.ModuloRepository;
+import ar.edu.udemm.reacciona.repository.ClaseRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
@@ -19,13 +21,16 @@ public class UsuarioService {
     private final RolRepository rolRepository;
     private final PasswordEncoder passwordEncoder;
     private final JavaMailSender mailSender;
+    private final ClaseRepository claseRepository;
+
 
     @Autowired
-    public UsuarioService(UsuarioRepository usuarioRepository, RolRepository rolRepository, PasswordEncoder passwordEncoder, JavaMailSender mailSender){
+    public UsuarioService(UsuarioRepository usuarioRepository, RolRepository rolRepository, PasswordEncoder passwordEncoder, JavaMailSender mailSender, ClaseRepository claseRepository){
         this.usuarioRepository = usuarioRepository;
         this.rolRepository = rolRepository;
         this.passwordEncoder = passwordEncoder;
         this.mailSender= mailSender;
+        this.claseRepository = claseRepository;
     }
 
     public Usuario getAuthenticatedUser() {
@@ -104,9 +109,40 @@ public class UsuarioService {
         return usuarioRepository.save(usuario);
     }
 
+    @Transactional(readOnly = true)
+    public List<Usuario> getUsuariosWithRolId2() {
+        return usuarioRepository.findAll().stream()
+                .filter(usuario -> usuario.getRol() != null && usuario.getRol().getIdRol() == 2)
+                .collect(Collectors.toList());
+    }
+
+    @Transactional(readOnly = true)
+    public List<Usuario> getUsuariosWithRolId1AndClaseNull() {
+        return usuarioRepository.findByRolIdRolAndClaseIsNull(1);
+    }
+
+
+    @Transactional
+    public void updateUsuariosClase(Long idClase, List<Long> alumnosIds) {
+        // Validate Clase
+        if (!claseRepository.existsById(idClase)) {
+            throw new IllegalArgumentException("Clase no encontrada con id: " + idClase);
+        }
+
+        // Fetch Usuarios
+        List<Usuario> usuarios = usuarioRepository.findAllById(alumnosIds);
+
+        // Fetch Clase entity
+        Clase clase = claseRepository.findById(idClase)
+                .orElseThrow(() -> new IllegalArgumentException("Clase no encontrada con id: " + idClase));
+
+        // Update Clase for each Usuario
+        usuarios.forEach(usuario -> usuario.setClase(clase));
+
+        // Save updated Usuarios
+        usuarioRepository.saveAll(usuarios);
+    }
+
 }
-
-
-
 
 record UpdateProfileRequest(String nombre, String email) {}

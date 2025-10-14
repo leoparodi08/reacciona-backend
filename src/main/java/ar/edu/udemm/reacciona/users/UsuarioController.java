@@ -49,4 +49,24 @@ public class UsuarioController {
         return ResponseEntity.ok(updatedUser);
     }
 
+    @GetMapping("/rol/docentes")
+    public ResponseEntity<List<Usuario>> getUsuariosWithRolId2() {
+        List<Usuario> usuarios = usuarioService.getUsuariosWithRolId2();
+        return ResponseEntity.ok(usuarios);
+    }
+
+    @GetMapping("/rol/estudiante/clase-empty")
+    public ResponseEntity<List<Usuario>> getUsuariosWithRolId1AndClaseNull() {
+        List<Usuario> usuarios = usuarioService.getUsuariosWithRolId1AndClaseNull();
+        return ResponseEntity.ok(usuarios);
+    }
+
+    @PostMapping("/{idClase}/asignar-clase")
+    public ResponseEntity<Void> assignClaseToUsuarios(
+            @PathVariable Long idClase,
+            @RequestBody List<Long> alumnosIds) {
+        usuarioService.updateUsuariosClase(idClase, alumnosIds);
+        return ResponseEntity.ok().build();
+    }
+
 }
