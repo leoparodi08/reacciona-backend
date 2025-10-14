@@ -27,3 +27,9 @@ spring.jpa.show-sql=true
 # ===============================================
 # Clave secreta para firmar los tokens JWT
 jwt.secret.key=TU_CLAVE_SECRETA_JWT_AQUI
+
+# ===============================================
+# CONFIGURACIÓN DE CORS
+# ===============================================
+# Orígenes permitidos para las peticiones del frontend (separados por coma)
+app.cors.allowed-origins=http://localhost:3000,http://TU_IP_DE_RED:3000
