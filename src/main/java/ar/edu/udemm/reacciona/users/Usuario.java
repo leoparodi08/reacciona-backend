@@ -1,6 +1,7 @@
 package ar.edu.udemm.reacciona.users;
 
 import ar.edu.udemm.reacciona.entity.Clase;
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import org.hibernate.annotations.CreationTimestamp;
@@ -54,6 +55,7 @@ public class Usuario implements UserDetails {
 
     @ManyToOne
     @JoinColumn(name = "id_clase")
+    @JsonBackReference
     private Clase clase;
 
     public Usuario() {

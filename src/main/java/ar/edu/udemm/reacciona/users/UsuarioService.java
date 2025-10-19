@@ -1,5 +1,6 @@
 package ar.edu.udemm.reacciona.users;
 
+import ar.edu.udemm.reacciona.dto.request.UpdateUsuarioRolRequest;
 import ar.edu.udemm.reacciona.entity.Clase;
 import ar.edu.udemm.reacciona.modules.ModuloRepository;
 import ar.edu.udemm.reacciona.repository.ClaseRepository;
@@ -143,6 +144,22 @@ public class UsuarioService {
         usuarioRepository.saveAll(usuarios);
     }
 
-}
+    @Transactional
+    public void updateUsuariosRoles(List<UpdateUsuarioRolRequest> usuariosRoles) {
+        for (UpdateUsuarioRolRequest request : usuariosRoles) {
+            Usuario usuario = usuarioRepository.findById(request.idUsuario())
+                    .orElseThrow(() -> new IllegalArgumentException("Usuario no encontrado con id: " + request.idUsuario()));
+            // Buscar el rol correspondiente al idRol
+            Rol rol = rolRepository.findById(request.idRol())
+                    .orElseThrow(() -> new IllegalArgumentException("Rol no encontrado con id: " + request.idRol()));
 
+            // Setear el rol al usuario
+            usuario.setRol(rol);
+
+            // Guardar el usuario actualizado
+            usuarioRepository.save(usuario);
+        }
+    }
+
+}
 record UpdateProfileRequest(String nombre, String email) {}

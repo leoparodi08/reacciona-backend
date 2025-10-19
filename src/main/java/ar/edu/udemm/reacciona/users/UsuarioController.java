@@ -1,6 +1,7 @@
 package ar.edu.udemm.reacciona.users;
 
 
+import ar.edu.udemm.reacciona.dto.request.UpdateUsuarioRolRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -66,6 +67,12 @@ public class UsuarioController {
             @PathVariable Long idClase,
             @RequestBody List<Long> alumnosIds) {
         usuarioService.updateUsuariosClase(idClase, alumnosIds);
+        return ResponseEntity.ok().build();
+    }
+
+    @PostMapping("/update-roles")
+    public ResponseEntity<Void> updateUsuariosRoles(@RequestBody List<UpdateUsuarioRolRequest> usuariosRoles) {
+        usuarioService.updateUsuariosRoles(usuariosRoles);
         return ResponseEntity.ok().build();
     }
 
