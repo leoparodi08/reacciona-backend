@@ -58,4 +58,15 @@ public class ClaseService {
         return claseRepository.save(clase);
     }
 
+    public List<Clase> getAllClases() {
+        List<Clase> clases = claseRepository.findAll();
+        clases.forEach(clase -> {
+            if (clase.getIdDocenteCreador() != null) {
+                usuarioRepository.findById(clase.getIdDocenteCreador())
+                        .ifPresent(usuario -> clase.setNombreDocente(usuario.getNombre()));
+            }
+        });
+        return clases;
+    }
+
 }

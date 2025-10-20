@@ -36,4 +36,10 @@ public class ClaseController {
         return ResponseEntity.ok(updatedClase);
     }
 
+    @GetMapping
+    public ResponseEntity<List<Clase>> getAllClases() {
+        List<Clase> clases = claseService.getAllClases();
+        return ResponseEntity.ok(clases);
+    }
+
 }

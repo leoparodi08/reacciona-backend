@@ -22,6 +22,9 @@ public class Clase {
 
     private Long idDocenteCreador;
 
+    @Transient
+    private String nombreDocente;
+
     @ManyToMany
     @JoinTable(
             name = "clase_modulo",
@@ -78,4 +81,13 @@ public class Clase {
     public void setModulos(List<Modulo> modulos) {
         this.modulos = modulos;
     }
+
+    public String getNombreDocente() {
+        return nombreDocente;
+    }
+
+    public void setNombreDocente(String nombreDocente) {
+        this.nombreDocente = nombreDocente;
+    }
+
 }
