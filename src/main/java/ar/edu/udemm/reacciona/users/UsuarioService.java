@@ -77,7 +77,7 @@ public class UsuarioService {
 
     public UserProfileDto getAuthenticatedUserProfile() {
         Usuario usuario = getAuthenticatedUser();
-        return new UserProfileDto(usuario.getId(), usuario.getNombre(), usuario.getEmail(), usuario.getPuntos(), usuario.getRol().getIdRol());
+        return new UserProfileDto(usuario.getId(), usuario.getNombre(), usuario.getEmail(), usuario.getPuntos(), usuario.getRol().getIdRol(), usuario.getClase() != null ? usuario.getClase().getId() : null);
     }
 
     public List<UserProfileDto> getAllUserProfiles(Long id) {
@@ -89,7 +89,8 @@ public class UsuarioService {
                         usuario.getNombre(),
                         usuario.getEmail(),
                         usuario.getPuntos(),
-                        usuario.getRol().getIdRol()
+                        usuario.getRol().getIdRol(),
+                        usuario.getClase() != null ? usuario.getClase().getId() : null
                 ))
                 .collect(Collectors.toList());
     }
