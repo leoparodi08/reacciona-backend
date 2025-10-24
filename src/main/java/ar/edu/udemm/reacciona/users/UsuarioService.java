@@ -162,5 +162,18 @@ public class UsuarioService {
         }
     }
 
+    @Transactional
+    public void removeClaseFromUsuario(Long idUsuario) {
+        // Buscar el usuario por id
+        Usuario usuario = usuarioRepository.findById(idUsuario)
+                .orElseThrow(() -> new IllegalArgumentException("Usuario no encontrado con id: " + idUsuario));
+
+        // Setear el campo Clase a null
+        usuario.setClase(null);
+
+        // Guardar el usuario actualizado
+        usuarioRepository.save(usuario);
+    }
+
 }
 record UpdateProfileRequest(String nombre, String email) {}

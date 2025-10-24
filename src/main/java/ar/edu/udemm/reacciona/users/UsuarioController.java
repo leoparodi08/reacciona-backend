@@ -76,4 +76,10 @@ public class UsuarioController {
         return ResponseEntity.ok().build();
     }
 
+    @PutMapping("/{idUsuario}/remove-clase")
+    public ResponseEntity<Void> removeClaseFromUsuario(@PathVariable Long idUsuario) {
+        usuarioService.removeClaseFromUsuario(idUsuario);
+        return ResponseEntity.ok().build();
+    }
+
 }
