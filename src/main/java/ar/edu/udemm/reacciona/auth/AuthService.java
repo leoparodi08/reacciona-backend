@@ -11,6 +11,10 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import ar.edu.udemm.reacciona.exception.EmailAlreadyExistsException;
+import ar.edu.udemm.reacciona.exception.WeakPasswordException;
+import java.util.regex.Pattern;
+import org.springframework.beans.factory.annotation.Value;
 
 import ar.edu.udemm.reacciona.config.jwt.JwtService;
 import ar.edu.udemm.reacciona.users.Rol;
@@ -27,6 +31,15 @@ public class AuthService {
     private final JavaMailSender mailSender;
     private final RolRepository rolRepository;
 
+    // Politica de Contraseña
+    private static final Pattern PASSWORD_PATTERN =
+            Pattern.compile("^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z]).{8,}$");
+    private static final String PASSWORD_POLICY_MESSAGE =
+            "La contraseña debe tener al menos 8 caracteres, incluyendo una mayúscula, una minúscula y un número.";
+
+    @Value("${app.frontend.base-url}")
+    private String frontendBaseUrl;
+
     @Autowired
     public AuthService(UsuarioRepository usuarioRepository, PasswordEncoder passwordEncoder, JwtService jwtService, AuthenticationManager authenticationManager, JavaMailSender mailSender, RolRepository rolRepository){
         this.usuarioRepository = usuarioRepository;
@@ -38,6 +51,11 @@ public class AuthService {
     }
 
     public Usuario registrarEstudiante(RegisterRequest request){
+
+        // Validacion de contraseña
+        if (!isValidPassword(request.password())) {
+            throw new WeakPasswordException(PASSWORD_POLICY_MESSAGE);
+        }
         Usuario nuevoUsuario = new Usuario();
         nuevoUsuario.setNombre(request.nombre());
         nuevoUsuario.setEmail(request.email());
@@ -50,7 +68,7 @@ public class AuthService {
         nuevoUsuario.setRol(rolEstudiante);
 
         if (usuarioRepository.findByEmail(request.email()).isPresent()) {
-            throw new ar.edu.udemm.reacciona.exception.EmailAlreadyExistsException("El email ya está registrado");
+            throw new EmailAlreadyExistsException("El email ya está registrado");
         }
 
         Usuario usuarioGuardado = usuarioRepository.save(nuevoUsuario);
@@ -83,17 +101,17 @@ public class AuthService {
             usuario.setResetPasswordTokenExpiryDate(LocalDateTime.now().plusHours(1));
             usuarioRepository.save(usuario);
 
-            String resetLink = "http://localhost:3000/reset-password?token=" + token;
+            String resetLink = frontendBaseUrl + "/reset-password?token=" + token;
             sendPasswordResetEmail(email, resetLink);
         }
     }
 
     public void resetPassword(String token, String newPassword) {
         Usuario usuario = usuarioRepository.findByResetPasswordToken(token)
-                .orElseThrow(() -> new RuntimeException("Token inválido o expirado."));
+                .orElseThrow(() -> new RuntimeException("El enlace de recuperación no es válido o ya fue utilizado."));
 
         if (usuario.getResetPasswordTokenExpiryDate().isBefore(LocalDateTime.now())) {
-            throw new RuntimeException("El token ha expirado.");
+            throw new RuntimeException("El enlace de recuperación ha expirado. Por favor, solicita uno nuevo.");
         }
 
         usuario.setPassword(passwordEncoder.encode(newPassword));
@@ -119,5 +137,12 @@ public class AuthService {
                 + "Ya puedes iniciar sesión y comenzar a aprender a actuar en situaciones de emergencia.\n\n"
                 + "Saludos,\nEl equipo de Reacciona");
         mailSender.send(message);
+    }
+    // Metodo para validar la contraseña
+    private boolean isValidPassword(String password) {
+        if (password == null) {
+            return false;
+        }
+        return PASSWORD_PATTERN.matcher(password).matches();
     }
 }
