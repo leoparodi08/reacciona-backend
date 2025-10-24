@@ -18,5 +18,10 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(error, HttpStatus.CONFLICT);
     }
 
-    // Puedes agregar otros manejadores aquí si lo necesitas
+    @ExceptionHandler(WeakPasswordException.class)
+    public ResponseEntity<Map<String, String>> handleWeakPasswordException(WeakPasswordException ex) {
+        Map<String, String> error = new HashMap<>();
+        error.put("message", ex.getMessage());
+        return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST); // 400 Bad Request
+    }
 }
