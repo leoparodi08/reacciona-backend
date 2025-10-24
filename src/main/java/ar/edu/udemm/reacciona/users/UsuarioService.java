@@ -77,7 +77,7 @@ public class UsuarioService {
 
     public UserProfileDto getAuthenticatedUserProfile() {
         Usuario usuario = getAuthenticatedUser();
-        return new UserProfileDto(usuario.getId(), usuario.getNombre(), usuario.getEmail(), usuario.getPuntos(), usuario.getRol().getIdRol());
+        return new UserProfileDto(usuario.getId(), usuario.getNombre(), usuario.getEmail(), usuario.getPuntos(), usuario.getRol().getIdRol(), usuario.getClase() != null ? usuario.getClase().getId() : null);
     }
 
     public List<UserProfileDto> getAllUserProfiles(Long id) {
@@ -89,7 +89,8 @@ public class UsuarioService {
                         usuario.getNombre(),
                         usuario.getEmail(),
                         usuario.getPuntos(),
-                        usuario.getRol().getIdRol()
+                        usuario.getRol().getIdRol(),
+                        usuario.getClase() != null ? usuario.getClase().getId() : null
                 ))
                 .collect(Collectors.toList());
     }
@@ -159,6 +160,19 @@ public class UsuarioService {
             // Guardar el usuario actualizado
             usuarioRepository.save(usuario);
         }
+    }
+
+    @Transactional
+    public void removeClaseFromUsuario(Long idUsuario) {
+        // Buscar el usuario por id
+        Usuario usuario = usuarioRepository.findById(idUsuario)
+                .orElseThrow(() -> new IllegalArgumentException("Usuario no encontrado con id: " + idUsuario));
+
+        // Setear el campo Clase a null
+        usuario.setClase(null);
+
+        // Guardar el usuario actualizado
+        usuarioRepository.save(usuario);
     }
 
 }
