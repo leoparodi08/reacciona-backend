@@ -16,4 +16,11 @@ public interface ActivityAttemptRepository extends JpaRepository<ActivityAttempt
     ActivityAttempt findTop1ByUsuarioAndPasoSimulacion_Contenido_IdOrderByFechaIntentoDesc(Usuario usuario, Long contenidoId);
 
     long deleteByUsuarioAndPasoSimulacion_Contenido_Id(Usuario usuario, Long contenidoId);
+    
+    // Métodos para monitoreo
+    ActivityAttempt findTop1ByUsuarioOrderByFechaIntentoDesc(Usuario usuario);
+    
+    List<ActivityAttempt> findTop10ByUsuarioOrderByFechaIntentoDesc(Usuario usuario);
+    
+    int countByUsuarioAndPasoSimulacion_Contenido_Modulo_Id(Usuario usuario, Long moduleId);
 }

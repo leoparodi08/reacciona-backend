@@ -62,4 +62,10 @@ public class ModuleProgress {
     public LocalDateTime getFechaActualizacion() { return fechaActualizacion; }
     public LocalDateTime getFechaComplecion() { return fechaComplecion; }
     public void setFechaComplecion(LocalDateTime fechaComplecion) { this.fechaComplecion = fechaComplecion; }
+    
+    // Método calculado para porcentaje
+    public double getPorcentaje() {
+        if (pasosTotales == 0) return 0.0;
+        return Math.round(((double) pasosCompletados / pasosTotales) * 100.0 * 100.0) / 100.0;
+    }
 }
