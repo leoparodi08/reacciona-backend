@@ -3,7 +3,7 @@ package ar.edu.udemm.reacciona.service;
 import ar.edu.udemm.reacciona.entity.Clase;
 import ar.edu.udemm.reacciona.modules.Modulo;
 import ar.edu.udemm.reacciona.modules.ModuloRepository;
-import ar.edu.udemm.reacciona.repository.ClaseRepository;
+import ar.edu.udemm.reacciona.entity.ClaseRepository;
 import ar.edu.udemm.reacciona.users.UsuarioRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

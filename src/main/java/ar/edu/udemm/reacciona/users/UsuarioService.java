@@ -3,7 +3,7 @@ package ar.edu.udemm.reacciona.users;
 import ar.edu.udemm.reacciona.dto.request.UpdateUsuarioRolRequest;
 import ar.edu.udemm.reacciona.entity.Clase;
 import ar.edu.udemm.reacciona.modules.ModuloRepository;
-import ar.edu.udemm.reacciona.repository.ClaseRepository;
+import ar.edu.udemm.reacciona.entity.ClaseRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
