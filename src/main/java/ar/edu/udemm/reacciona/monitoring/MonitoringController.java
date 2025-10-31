@@ -10,7 +10,7 @@ import ar.edu.udemm.reacciona.users.UsuarioRepository;
 import ar.edu.udemm.reacciona.modules.Modulo;
 import ar.edu.udemm.reacciona.modules.ModuloRepository;
 import ar.edu.udemm.reacciona.entity.Clase;
-import ar.edu.udemm.reacciona.entity.ClaseRepository;
+import ar.edu.udemm.reacciona.repository.ClaseRepository;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.format.annotation.DateTimeFormat;
