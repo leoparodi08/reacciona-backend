@@ -201,7 +201,16 @@ public class MonitoringController {
             @PathVariable Long groupId,
             @RequestParam(required = false, defaultValue = "summary") String type) {
         
-        List<Usuario> students = usuarioRepository.findByRoleName("Estudiante");
+        Usuario currentUser = getCurrentUser();
+        
+        // Verificar que la clase pertenece al profesor autenticado
+        if (!claseRepository.existsByIdAndDocenteCreador(groupId, currentUser.getId())) {
+            return ResponseEntity.status(403).body(Map.of("error", "No tienes acceso a esta clase"));
+        }
+        
+        // Obtener solo los estudiantes de la clase específica
+        Clase clase = claseRepository.findByIdAndDocenteCreador(groupId, currentUser.getId());
+        List<Usuario> students = clase.getAlumnos();
         
         List<Map<String, Object>> exportData = students.stream()
             .map(student -> {
@@ -217,6 +226,7 @@ public class MonitoringController {
 
         Map<String, Object> response = new HashMap<>();
         response.put("groupId", groupId);
+        response.put("groupName", clase.getNombreClase());
         response.put("exportDate", LocalDateTime.now().toString());
         response.put("students", exportData);
         response.put("summary", calculateGroupSummaryFromStudents(exportData));
