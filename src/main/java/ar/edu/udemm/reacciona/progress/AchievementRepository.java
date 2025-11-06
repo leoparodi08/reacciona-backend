@@ -9,4 +9,6 @@ import java.util.Optional;
 public interface AchievementRepository extends JpaRepository<Achievement, Long> {
     List<Achievement> findByUsuario(Usuario usuario);
     Optional<Achievement> findByUsuarioAndCodigo(Usuario usuario, String codigo);
+    // Obtener los últimos 5 logros por fecha de obtención descendente
+    List<Achievement> findTop5ByUsuarioOrderByFechaObtencionDesc(Usuario usuario);
 }

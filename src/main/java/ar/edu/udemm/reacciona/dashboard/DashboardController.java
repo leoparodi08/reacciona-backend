@@ -2,6 +2,8 @@ package ar.edu.udemm.reacciona.dashboard;
 
 import ar.edu.udemm.reacciona.progress.ModuleProgress;
 import ar.edu.udemm.reacciona.progress.ModuleProgressRepository;
+import ar.edu.udemm.reacciona.progress.Achievement;
+import ar.edu.udemm.reacciona.progress.AchievementRepository;
 import ar.edu.udemm.reacciona.users.Usuario;
 import ar.edu.udemm.reacciona.users.UsuarioService;
 import org.springframework.http.ResponseEntity;
@@ -20,10 +22,14 @@ public class DashboardController {
 
     private final UsuarioService usuarioService;
     private final ModuleProgressRepository moduleProgressRepository;
+    private final AchievementRepository achievementRepository;
 
-    public DashboardController(UsuarioService usuarioService, ModuleProgressRepository moduleProgressRepository) {
+    public DashboardController(UsuarioService usuarioService,
+                               ModuleProgressRepository moduleProgressRepository,
+                               AchievementRepository achievementRepository) {
         this.usuarioService = usuarioService;
         this.moduleProgressRepository = moduleProgressRepository;
+        this.achievementRepository = achievementRepository;
     }
 
     @GetMapping("/overview")
@@ -41,6 +47,20 @@ public class DashboardController {
         body.put("nombre", user.getNombre());
         body.put("puntos", puntos);
         body.put("level", level);
+
+        // Últimos 5 logros (adaptable a menos si el usuario tiene menos)
+        List<Achievement> latestAchievements = achievementRepository.findTop5ByUsuarioOrderByFechaObtencionDesc(user);
+        List<Map<String, Object>> achievementsList = latestAchievements.stream().map(a -> {
+            Map<String, Object> ach = new HashMap<>();
+            ach.put("id", a.getId());
+            ach.put("codigo", a.getCodigo());
+            ach.put("nombre", a.getNombre());
+            ach.put("descripcion", a.getDescripcion());
+            ach.put("icono", a.getIcono());
+            ach.put("fechaObtencion", a.getFechaObtencion());
+            return ach;
+        }).toList();
+        body.put("achievements", achievementsList);
         if (last != null) {
             int porcentaje = last.getPasosTotales() == 0 ? 0 : (int) Math.round((last.getPasosCompletados() * 100.0) / last.getPasosTotales());
             Map<String, Object> lastModule = new HashMap<>();

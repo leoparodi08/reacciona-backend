@@ -4,6 +4,8 @@ import ar.edu.udemm.reacciona.progress.ModuleProgress;
 import ar.edu.udemm.reacciona.progress.ModuleProgressRepository;
 import ar.edu.udemm.reacciona.progress.ActivityAttempt;
 import ar.edu.udemm.reacciona.progress.ActivityAttemptRepository;
+import ar.edu.udemm.reacciona.progress.Achievement;
+import ar.edu.udemm.reacciona.progress.AchievementRepository;
 import ar.edu.udemm.reacciona.users.Usuario;
 import ar.edu.udemm.reacciona.users.UsuarioService;
 import ar.edu.udemm.reacciona.users.UsuarioRepository;
@@ -32,6 +34,7 @@ public class MonitoringController {
     private final ActivityAttemptRepository activityAttemptRepository;
     private final ModuloRepository moduloRepository;
     private final ClaseRepository claseRepository;
+    private final AchievementRepository achievementRepository;
 
     public MonitoringController(
             UsuarioService usuarioService,
@@ -39,13 +42,15 @@ public class MonitoringController {
             ModuleProgressRepository moduleProgressRepository,
             ActivityAttemptRepository activityAttemptRepository,
             ModuloRepository moduloRepository,
-            ClaseRepository claseRepository) {
+            ClaseRepository claseRepository,
+            AchievementRepository achievementRepository) {
         this.usuarioService = usuarioService;
         this.usuarioRepository = usuarioRepository;
         this.moduleProgressRepository = moduleProgressRepository;
         this.activityAttemptRepository = activityAttemptRepository;
         this.moduloRepository = moduloRepository;
         this.claseRepository = claseRepository;
+        this.achievementRepository = achievementRepository;
     }
 
     /**
@@ -270,7 +275,7 @@ public class MonitoringController {
         stats.put("averageScore", Math.round(averageScore * 100.0) / 100.0);
         stats.put("completedModules", (int) progress.stream().filter(p -> p.getPorcentaje() >= 100).count());
         stats.put("totalModules", allModules.size());
-        stats.put("achievementsCount", 0); // Temporal
+        stats.put("achievementsCount", achievementRepository.findByUsuario(student).size());
         stats.put("status", status);
 
         return stats;
@@ -293,14 +298,22 @@ public class MonitoringController {
             .mapToDouble(p -> (double) p.getPuntajeTotal() / p.getPasosCompletados())
             .average().orElse(0.0);
 
+        // Calcular tiempo invertido estimado basado en la actividad
+        // Estimación: cada intento de actividad toma aproximadamente 2-3 minutos en promedio
+        List<ActivityAttempt> allAttempts = activityAttemptRepository.findByUsuario(student);
+        int estimatedTimeMinutes = allAttempts.size() * 2; // 2 minutos por intento promedio
+        
+        // Obtener logros reales del estudiante
+        List<Achievement> achievements = achievementRepository.findByUsuario(student);
+
         Map<String, Object> overall = new HashMap<>();
         overall.put("totalProgress", Math.round(totalProgress * 100.0) / 100.0);
         overall.put("completedModules", (int) progress.stream().filter(p -> p.getPorcentaje() >= 100).count());
         overall.put("totalModules", allModules.size());
         overall.put("totalScore", totalScore);
         overall.put("averageScore", Math.round(averageScore * 100.0) / 100.0);
-        overall.put("totalTimeSpent", 0); // Se implementará cuando se trackee tiempo
-        overall.put("achievementsCount", 0); // Temporal
+        overall.put("totalTimeSpent", estimatedTimeMinutes);
+        overall.put("achievementsCount", achievements.size());
 
         return overall;
     }
@@ -318,10 +331,15 @@ public class MonitoringController {
             moduleInfo.put("pasosTotales", p.getPasosTotales());
             moduleInfo.put("puntajeTotal", p.getPuntajeTotal());
             moduleInfo.put("porcentaje", p.getPorcentaje());
-            moduleInfo.put("timeSpent", 0); // Temporal
+            
+            // Calcular tiempo invertido estimado por módulo (2 minutos por intento)
+            int attemptsCount = countAttemptsForModule(student, p.getModulo().getId());
+            int estimatedTimeMinutes = attemptsCount * 2;
+            moduleInfo.put("timeSpent", estimatedTimeMinutes);
+            
             moduleInfo.put("lastAccessed", p.getFechaActualizacion() != null ? 
                 p.getFechaActualizacion().toString() : null);
-            moduleInfo.put("attempts", countAttemptsForModule(student, p.getModulo().getId()));
+            moduleInfo.put("attempts", attemptsCount);
             return moduleInfo;
         }).collect(Collectors.toList());
     }

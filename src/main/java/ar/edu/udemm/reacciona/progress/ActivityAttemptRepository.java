@@ -22,5 +22,7 @@ public interface ActivityAttemptRepository extends JpaRepository<ActivityAttempt
     
     List<ActivityAttempt> findTop10ByUsuarioOrderByFechaIntentoDesc(Usuario usuario);
     
+    List<ActivityAttempt> findByUsuario(Usuario usuario);
+    
     int countByUsuarioAndPasoSimulacion_Contenido_Modulo_Id(Usuario usuario, Long moduleId);
 }
