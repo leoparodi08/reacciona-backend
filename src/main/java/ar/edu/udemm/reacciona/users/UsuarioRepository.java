@@ -15,6 +15,7 @@ public interface UsuarioRepository extends JpaRepository<Usuario, Long> {
     Optional<Usuario> findByEmail(String email);
     Optional<Usuario> findByResetPasswordToken(String token);
     List<Usuario> findByRolIdRolAndClaseIsNull(Integer idRol);
+    List<Usuario> findByRolIdRol(Integer idRol);
     
     // Método para encontrar usuarios por nombre de rol
     @Query("SELECT u FROM Usuario u WHERE u.rol.nombreRol = :roleName")

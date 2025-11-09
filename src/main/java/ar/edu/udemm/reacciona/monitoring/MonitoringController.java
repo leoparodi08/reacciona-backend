@@ -74,18 +74,117 @@ public class MonitoringController {
         return ResponseEntity.ok(response);
     }
 
+    /**
+     * Obtiene todos los estudiantes del sistema (solo para admin)
+     */
+    @GetMapping("/all-students")
+    public ResponseEntity<List<Map<String, Object>>> getAllStudents(
+            @RequestParam(required = false) String status,
+            @RequestParam(required = false, defaultValue = "name") String sortBy,
+            @RequestParam(required = false, defaultValue = "asc") String sortOrder) {
+
+        Usuario currentUser = getCurrentUser();
+        
+        // Verificar que sea administrador (rol 3)
+        if (currentUser.getRol() == null || currentUser.getRol().getIdRol() != 3) {
+            return ResponseEntity.status(403).body(List.of());
+        }
+        
+        // Obtener todos los usuarios con rol estudiante (idRol = 1)
+        List<Usuario> allStudents = usuarioRepository.findByRolIdRol(1);
+        
+        List<Map<String, Object>> studentProgress = allStudents.stream()
+            .map(this::calculateStudentStats)
+            .collect(Collectors.toList());
+
+        // Aplicar filtros
+        if (status != null && !"all".equals(status)) {
+            studentProgress = studentProgress.stream()
+                .filter(s -> status.equals(s.get("status")))
+                .collect(Collectors.toList());
+        }
+
+        // Aplicar ordenamiento
+        Comparator<Map<String, Object>> comparator = getComparator(sortBy);
+        if ("desc".equals(sortOrder)) {
+            comparator = comparator.reversed();
+        }
+        studentProgress.sort(comparator);
+
+        return ResponseEntity.ok(studentProgress);
+    }
+
+    /**
+     * Obtiene estadísticas globales de todos los estudiantes (solo para admin)
+     */
+    @GetMapping("/all-students/statistics")
+    public ResponseEntity<Map<String, Object>> getAllStudentsStatistics() {
+        Usuario currentUser = getCurrentUser();
+        
+        // Verificar que sea administrador (rol 3)
+        if (currentUser.getRol() == null || currentUser.getRol().getIdRol() != 3) {
+            return ResponseEntity.status(403).body(Map.of("error", "No tienes acceso a esta función"));
+        }
+        
+        // Obtener todos los estudiantes
+        List<Usuario> allStudents = usuarioRepository.findByRolIdRol(1);
+        
+        if (allStudents.isEmpty()) {
+            Map<String, Object> emptyStats = new HashMap<>();
+            emptyStats.put("totalStudents", 0);
+            emptyStats.put("activeStudents", 0);
+            emptyStats.put("averageProgress", 0);
+            emptyStats.put("averageScore", 0);
+            return ResponseEntity.ok(emptyStats);
+        }
+
+        List<Map<String, Object>> studentStats = allStudents.stream()
+            .map(this::calculateStudentStats)
+            .collect(Collectors.toList());
+
+        // Calcular estadísticas globales
+        double avgProgress = studentStats.stream()
+            .mapToDouble(s -> (Double) s.get("totalProgress"))
+            .average().orElse(0.0);
+
+        double avgScore = studentStats.stream()
+            .mapToDouble(s -> (Double) s.get("averageScore"))
+            .average().orElse(0.0);
+
+        long activeStudents = studentStats.stream()
+            .filter(s -> "active".equals(s.get("status")))
+            .count();
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("groupId", -1); // Indicador de "todos"
+        response.put("groupName", "Todos los estudiantes");
+        response.put("totalStudents", allStudents.size());
+        response.put("activeStudents", (int) activeStudents);
+        response.put("averageProgress", Math.round(avgProgress * 100.0) / 100.0);
+        response.put("averageScore", Math.round(avgScore * 100.0) / 100.0);
+        response.put("completionRate", calculateCompletionRate(studentStats));
+        response.put("mostDifficultModule", findMostDifficultModule());
+
+        return ResponseEntity.ok(response);
+    }
+
     @GetMapping("/group/{groupId}/statistics")
     public ResponseEntity<Map<String, Object>> getGroupStatistics(@PathVariable Long groupId) {
         Usuario currentUser = getCurrentUser();
-        
-        // Verificar que la clase pertenece al profesor autenticado
-        if (!claseRepository.existsByIdAndDocenteCreador(groupId, currentUser.getId())) {
-            return ResponseEntity.status(403).body(Map.of("error", "No tienes acceso a esta clase"));
+
+        Clase clase;
+        if (isAdmin(currentUser)) {
+            clase = claseRepository.findById(groupId)
+                    .orElseThrow(() -> new RuntimeException("Clase no encontrada"));
+        } else {
+            if (!claseRepository.existsByIdAndDocenteCreador(groupId, currentUser.getId())) {
+                return ResponseEntity.status(403).body(Map.of("error", "No tienes acceso a esta clase"));
+            }
+            clase = claseRepository.findByIdAndDocenteCreador(groupId, currentUser.getId());
         }
-        
-        Clase clase = claseRepository.findByIdAndDocenteCreador(groupId, currentUser.getId());
+
         List<Usuario> students = clase.getAlumnos();
-        
+
         if (students.isEmpty()) {
             Map<String, Object> emptyStats = new HashMap<>();
             emptyStats.put("totalStudents", 0);
@@ -99,7 +198,6 @@ public class MonitoringController {
             .map(this::calculateStudentStats)
             .collect(Collectors.toList());
 
-        // Calcular estadísticas grupales
         double avgProgress = studentStats.stream()
             .mapToDouble(s -> (Double) s.get("totalProgress"))
             .average().orElse(0.0);
@@ -112,7 +210,6 @@ public class MonitoringController {
             .filter(s -> "active".equals(s.get("status")))
             .count();
 
-        // Encontrar módulo más difícil
         Map<String, Object> difficultModule = findMostDifficultModule();
 
         Map<String, Object> response = new HashMap<>();
@@ -139,27 +236,30 @@ public class MonitoringController {
             @RequestParam(required = false, defaultValue = "asc") String sortOrder) {
 
         Usuario currentUser = getCurrentUser();
-        
-        // Verificar que la clase pertenece al profesor autenticado
-        if (!claseRepository.existsByIdAndDocenteCreador(groupId, currentUser.getId())) {
-            return ResponseEntity.status(403).body(List.of());
+
+        Clase clase;
+        if (isAdmin(currentUser)) {
+            clase = claseRepository.findById(groupId)
+                    .orElseThrow(() -> new RuntimeException("Clase no encontrada"));
+        } else {
+            if (!claseRepository.existsByIdAndDocenteCreador(groupId, currentUser.getId())) {
+                return ResponseEntity.status(403).body(List.of());
+            }
+            clase = claseRepository.findByIdAndDocenteCreador(groupId, currentUser.getId());
         }
-        
-        Clase clase = claseRepository.findByIdAndDocenteCreador(groupId, currentUser.getId());
+
         List<Usuario> students = clase.getAlumnos();
-        
+
         List<Map<String, Object>> studentProgress = students.stream()
             .map(this::calculateStudentStats)
             .collect(Collectors.toList());
 
-        // Aplicar filtros
         if (status != null && !"all".equals(status)) {
             studentProgress = studentProgress.stream()
                 .filter(s -> status.equals(s.get("status")))
                 .collect(Collectors.toList());
         }
 
-        // Aplicar ordenamiento
         Comparator<Map<String, Object>> comparator = getComparator(sortBy);
         if ("desc".equals(sortOrder)) {
             comparator = comparator.reversed();
@@ -175,27 +275,22 @@ public class MonitoringController {
             .orElseThrow(() -> new RuntimeException("Estudiante no encontrado"));
 
         Map<String, Object> details = new HashMap<>();
-        
-        // Información básica del estudiante
+
         Map<String, Object> studentInfo = new HashMap<>();
         studentInfo.put("id", student.getId());
         studentInfo.put("nombre", student.getNombre());
         studentInfo.put("email", student.getEmail());
         details.put("student", studentInfo);
 
-        // Progreso general
         Map<String, Object> overallProgress = calculateDetailedStudentStats(student);
         details.put("overallProgress", overallProgress);
 
-        // Progreso por módulo
         List<Map<String, Object>> moduleProgress = getModuleProgressForStudent(student);
         details.put("moduleProgress", moduleProgress);
 
-        // Actividad reciente
         List<Map<String, Object>> recentActivity = getRecentActivityForStudent(student);
         details.put("recentActivity", recentActivity);
 
-        // Logros (por ahora vacío, se implementará cuando esté el sistema de logros)
         details.put("achievements", new ArrayList<>());
 
         return ResponseEntity.ok(details);
@@ -205,23 +300,26 @@ public class MonitoringController {
     public ResponseEntity<Map<String, Object>> exportGroupData(
             @PathVariable Long groupId,
             @RequestParam(required = false, defaultValue = "summary") String type) {
-        
+
         Usuario currentUser = getCurrentUser();
-        
-        // Verificar que la clase pertenece al profesor autenticado
-        if (!claseRepository.existsByIdAndDocenteCreador(groupId, currentUser.getId())) {
-            return ResponseEntity.status(403).body(Map.of("error", "No tienes acceso a esta clase"));
+
+        Clase clase;
+        if (isAdmin(currentUser)) {
+            clase = claseRepository.findById(groupId)
+                    .orElseThrow(() -> new RuntimeException("Clase no encontrada"));
+        } else {
+            if (!claseRepository.existsByIdAndDocenteCreador(groupId, currentUser.getId())) {
+                return ResponseEntity.status(403).body(Map.of("error", "No tienes acceso a esta clase"));
+            }
+            clase = claseRepository.findByIdAndDocenteCreador(groupId, currentUser.getId());
         }
-        
-        // Obtener solo los estudiantes de la clase específica
-        Clase clase = claseRepository.findByIdAndDocenteCreador(groupId, currentUser.getId());
+
         List<Usuario> students = clase.getAlumnos();
-        
+
         List<Map<String, Object>> exportData = students.stream()
             .map(student -> {
                 Map<String, Object> stats = calculateStudentStats(student);
                 if ("detailed".equals(type)) {
-                    // Agregar información detallada para exportación completa
                     stats.put("moduleProgress", getModuleProgressForStudent(student));
                     stats.put("recentActivity", getRecentActivityForStudent(student));
                 }
@@ -480,5 +578,9 @@ public class MonitoringController {
         String email = authentication.getName();
         return usuarioRepository.findByEmail(email)
             .orElseThrow(() -> new RuntimeException("Usuario autenticado no encontrado"));
+    }
+
+    private boolean isAdmin(Usuario usuario) {
+        return usuario != null && usuario.getRol() != null && usuario.getRol().getIdRol() == 3;
     }
 }
