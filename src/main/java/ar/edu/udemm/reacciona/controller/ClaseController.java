@@ -1,6 +1,7 @@
 package ar.edu.udemm.reacciona.controller;
 
 import ar.edu.udemm.reacciona.dto.request.CreateClaseRequest;
+import ar.edu.udemm.reacciona.dto.response.ClaseSinContenidosDTO;
 import ar.edu.udemm.reacciona.entity.Clase;
 import ar.edu.udemm.reacciona.service.ClaseService;
 import org.springframework.http.ResponseEntity;
@@ -37,8 +38,8 @@ public class ClaseController {
     }
 
     @GetMapping
-    public ResponseEntity<List<Clase>> getAllClases() {
-        List<Clase> clases = claseService.getAllClases();
+    public ResponseEntity<List<ClaseSinContenidosDTO>> getAllClases() {
+        List<ClaseSinContenidosDTO> clases = claseService.getAllClases();
         return ResponseEntity.ok(clases);
     }
 

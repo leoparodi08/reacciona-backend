@@ -1,9 +1,13 @@
 package ar.edu.udemm.reacciona.service;
 
+import ar.edu.udemm.reacciona.dto.response.ClaseSinContenidosDTO;
+import ar.edu.udemm.reacciona.dto.response.ModuloSinContenidosDTO;
+import ar.edu.udemm.reacciona.dto.response.UsuarioSinRolDTO;
 import ar.edu.udemm.reacciona.entity.Clase;
 import ar.edu.udemm.reacciona.modules.Modulo;
 import ar.edu.udemm.reacciona.modules.ModuloRepository;
 import ar.edu.udemm.reacciona.repository.ClaseRepository;
+import ar.edu.udemm.reacciona.users.Usuario;
 import ar.edu.udemm.reacciona.users.UsuarioRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -58,15 +62,39 @@ public class ClaseService {
         return claseRepository.save(clase);
     }
 
-    public List<Clase> getAllClases() {
+    // src/main/java/ar/edu/udemm/reacciona/service/ClaseService.java
+    public List<ClaseSinContenidosDTO> getAllClases() {
         List<Clase> clases = claseRepository.findAll();
-        clases.forEach(clase -> {
+        return clases.stream().map(clase -> {
+            String nombreDocente = null;
             if (clase.getIdDocenteCreador() != null) {
-                usuarioRepository.findById(clase.getIdDocenteCreador())
-                        .ifPresent(usuario -> clase.setNombreDocente(usuario.getNombre()));
+                nombreDocente = usuarioRepository.findById(clase.getIdDocenteCreador())
+                        .map(Usuario::getNombre)
+                        .orElse(null);
             }
-        });
-        return clases;
+            List<ModuloSinContenidosDTO> modulosDTO = clase.getModulos().stream()
+                    .map(modulo -> new ModuloSinContenidosDTO(
+                            modulo.getId(),
+                            modulo.getTitulo(),
+                            modulo.getDescripcion(),
+                            modulo.getTipoEmergencia().name(),
+                            modulo.getNivelDificultad().name()
+                    )).toList();
+            List<UsuarioSinRolDTO> usuarioDTO = clase.getAlumnos().stream()
+                    .map(usuario -> new UsuarioSinRolDTO(
+                            usuario.getId(),
+                            usuario.getNombre(),
+                            usuario.getEmail()
+                    )).toList();
+            return new ClaseSinContenidosDTO(
+                    clase.getId(),
+                    clase.getNombreClase(),
+                    clase.getDescripcion(),
+                    nombreDocente,
+                    usuarioDTO,
+                    modulosDTO
+            );
+        }).toList();
     }
 
 }
