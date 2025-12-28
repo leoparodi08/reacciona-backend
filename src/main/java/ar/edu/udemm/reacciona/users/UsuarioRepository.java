@@ -1,8 +1,11 @@
 package ar.edu.udemm.reacciona.users;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 @Repository
@@ -11,4 +14,10 @@ public interface UsuarioRepository extends JpaRepository<Usuario, Long> {
     // Spring Data JPA creará la implementación de este metodo automáticamente
     Optional<Usuario> findByEmail(String email);
     Optional<Usuario> findByResetPasswordToken(String token);
+    List<Usuario> findByRolIdRolAndClaseIsNull(Integer idRol);
+    List<Usuario> findByRolIdRol(Integer idRol);
+    
+    // Método para encontrar usuarios por nombre de rol
+    @Query("SELECT u FROM Usuario u WHERE u.rol.nombreRol = :roleName")
+    List<Usuario> findByRoleName(@Param("roleName") String roleName);
 }

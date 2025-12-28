@@ -1,5 +1,6 @@
 package ar.edu.udemm.reacciona.modules;
 
+import ar.edu.udemm.reacciona.entity.Clase;
 import ar.edu.udemm.reacciona.entity.Contenido;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
@@ -26,6 +27,10 @@ public class Modulo {
     @OneToMany(mappedBy = "modulo", cascade = CascadeType.ALL, orphanRemoval = true,  fetch = FetchType.LAZY)
     //@JsonManagedReference
     private List<Contenido> contenidos = new ArrayList<>();
+
+
+    @ManyToMany(mappedBy = "modulos")
+    private List<Clase> clases = new ArrayList<>();
 
     // JPA necesita un contructor sin argumentos.
     public Modulo() {

@@ -51,4 +51,4 @@ dependency-reduced-pom.xml
 .DS_Store
 
 # Ignorar el archivo de propiedades con secretos locales
-application.properties
+#application.properties

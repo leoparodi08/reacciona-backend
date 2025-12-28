@@ -1,24 +1,36 @@
 package ar.edu.udemm.reacciona.users;
 
-import ar.edu.udemm.reacciona.modules.ModuloRepository;
+import ar.edu.udemm.reacciona.dto.request.UpdateUsuarioRolRequest;
+import ar.edu.udemm.reacciona.entity.Clase;
+import ar.edu.udemm.reacciona.repository.ClaseRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.Comparator;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class UsuarioService {
     private final UsuarioRepository usuarioRepository;
+    private final RolRepository rolRepository;
     private final PasswordEncoder passwordEncoder;
     private final JavaMailSender mailSender;
+    private final ClaseRepository claseRepository;
+
 
     @Autowired
-    public UsuarioService(UsuarioRepository usuarioRepository, PasswordEncoder passwordEncoder, JavaMailSender mailSender){
+    public UsuarioService(UsuarioRepository usuarioRepository, RolRepository rolRepository, PasswordEncoder passwordEncoder, JavaMailSender mailSender, ClaseRepository claseRepository){
         this.usuarioRepository = usuarioRepository;
+        this.rolRepository = rolRepository;
         this.passwordEncoder = passwordEncoder;
         this.mailSender= mailSender;
+        this.claseRepository = claseRepository;
     }
 
     public Usuario getAuthenticatedUser() {
@@ -64,8 +76,103 @@ public class UsuarioService {
 
     public UserProfileDto getAuthenticatedUserProfile() {
         Usuario usuario = getAuthenticatedUser();
-        return new UserProfileDto(usuario.getNombre(), usuario.getEmail(), usuario.getPuntos());
+        return new UserProfileDto(usuario.getId(), usuario.getNombre(), usuario.getEmail(), usuario.getPuntos(), usuario.getRol().getIdRol(), usuario.getClase() != null ? usuario.getClase().getId() : null);
     }
-}
 
+    public List<UserProfileDto> getAllUserProfiles(Long id) {
+        return usuarioRepository.findAll().stream()
+                .filter(usuario -> !usuario.getId().equals(id)) // Excluir el usuario con el ID recibido
+                .sorted(Comparator.comparing(Usuario::getNombre)) // Ordenar por nombre ascendente
+                .map(usuario -> new UserProfileDto(
+                        usuario.getId(),
+                        usuario.getNombre(),
+                        usuario.getEmail(),
+                        usuario.getPuntos(),
+                        usuario.getRol().getIdRol(),
+                        usuario.getClase() != null ? usuario.getClase().getId() : null
+                ))
+                .collect(Collectors.toList());
+    }
+
+
+    @Transactional
+    public Usuario updateUserRole(Long idUsuario, Integer idRol) {
+        // Verificar si el usuario existe
+        Usuario usuario = usuarioRepository.findById(idUsuario)
+                .orElseThrow(() -> new IllegalArgumentException("Usuario no encontrado con id: " + idUsuario));
+
+        // Verificar si el rol existe
+        Rol rol = rolRepository.findById(idRol)
+                .orElseThrow(() -> new IllegalArgumentException("Rol no encontrado con id: " + idRol));
+
+        // Actualizar el rol del usuario
+        usuario.setRol(rol);
+        return usuarioRepository.save(usuario);
+    }
+
+    @Transactional(readOnly = true)
+    public List<Usuario> getUsuariosWithRolId2() {
+        return usuarioRepository.findAll().stream()
+                .filter(usuario -> usuario.getRol() != null && usuario.getRol().getIdRol() == 2)
+                .collect(Collectors.toList());
+    }
+
+    @Transactional(readOnly = true)
+    public List<Usuario> getUsuariosWithRolId1AndClaseNull() {
+        return usuarioRepository.findByRolIdRolAndClaseIsNull(1);
+    }
+
+
+    @Transactional
+    public void updateUsuariosClase(Long idClase, List<Long> alumnosIds) {
+        // Validate Clase
+        if (!claseRepository.existsById(idClase)) {
+            throw new IllegalArgumentException("Clase no encontrada con id: " + idClase);
+        }
+
+        // Fetch Usuarios
+        List<Usuario> usuarios = usuarioRepository.findAllById(alumnosIds);
+
+        // Fetch Clase entity
+        Clase clase = claseRepository.findById(idClase)
+                .orElseThrow(() -> new IllegalArgumentException("Clase no encontrada con id: " + idClase));
+
+        // Update Clase for each Usuario
+        usuarios.forEach(usuario -> usuario.setClase(clase));
+
+        // Save updated Usuarios
+        usuarioRepository.saveAll(usuarios);
+    }
+
+    @Transactional
+    public void updateUsuariosRoles(List<UpdateUsuarioRolRequest> usuariosRoles) {
+        for (UpdateUsuarioRolRequest request : usuariosRoles) {
+            Usuario usuario = usuarioRepository.findById(request.idUsuario())
+                    .orElseThrow(() -> new IllegalArgumentException("Usuario no encontrado con id: " + request.idUsuario()));
+            // Buscar el rol correspondiente al idRol
+            Rol rol = rolRepository.findById(request.idRol())
+                    .orElseThrow(() -> new IllegalArgumentException("Rol no encontrado con id: " + request.idRol()));
+
+            // Setear el rol al usuario
+            usuario.setRol(rol);
+
+            // Guardar el usuario actualizado
+            usuarioRepository.save(usuario);
+        }
+    }
+
+    @Transactional
+    public void removeClaseFromUsuario(Long idUsuario) {
+        // Buscar el usuario por id
+        Usuario usuario = usuarioRepository.findById(idUsuario)
+                .orElseThrow(() -> new IllegalArgumentException("Usuario no encontrado con id: " + idUsuario));
+
+        // Setear el campo Clase a null
+        usuario.setClase(null);
+
+        // Guardar el usuario actualizado
+        usuarioRepository.save(usuario);
+    }
+
+}
 record UpdateProfileRequest(String nombre, String email) {}

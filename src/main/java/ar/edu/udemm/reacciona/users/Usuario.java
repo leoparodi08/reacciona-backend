@@ -1,5 +1,7 @@
 package ar.edu.udemm.reacciona.users;
 
+import ar.edu.udemm.reacciona.entity.Clase;
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import org.hibernate.annotations.CreationTimestamp;
@@ -37,6 +39,10 @@ public class Usuario implements UserDetails {
     @Column(name = "fecha_actualizacion")
     private LocalDateTime fechaActualizacion;
 
+    public Rol getRol() {
+        return rol;
+    }
+
     // Relación con Roles
     @ManyToOne
     @JoinColumn(name = "id_rol")
@@ -46,6 +52,11 @@ public class Usuario implements UserDetails {
 
     private String resetPasswordToken;
     private LocalDateTime resetPasswordTokenExpiryDate;
+
+    @ManyToOne
+    @JoinColumn(name = "id_clase")
+    @JsonBackReference
+    private Clase clase;
 
     public Usuario() {
     }
@@ -115,4 +126,11 @@ public class Usuario implements UserDetails {
     public void setRol(Rol rol) {this.rol = rol;}
     public int getPuntos() { return puntos; }
     public void setPuntos(int puntos) { this.puntos = puntos; }
+    public Clase getClase() {
+        return clase;
+    }
+
+    public void setClase(Clase clase) {
+        this.clase = clase;
+    }
 }

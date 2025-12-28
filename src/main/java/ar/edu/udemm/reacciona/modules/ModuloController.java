@@ -1,5 +1,6 @@
 package ar.edu.udemm.reacciona.modules;
 
+import ar.edu.udemm.reacciona.dto.response.ModuloSinPasosDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -24,7 +25,7 @@ public class ModuloController {
 
     // 3. Este metodo manejará las peticiones GET a /api/modulos
     @GetMapping
-    public List<Modulo> obtenerTodosLosModulos() {
+    public List<ModuloSinPasosDTO> obtenerTodosLosModulos() {
         // El controlador ahora solo delega la llamada al servicio. ¡Está mucho más limpio!
         return moduloService.obtenerTodosLosModulos();
     }
